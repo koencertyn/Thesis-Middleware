@@ -1,0 +1,95 @@
+package drool.instances;
+ 
+import entity.request.Request;
+import enums.Purpose;
+import enums.Property;
+import monitor.MonitorController;
+import controller.cloud.CloudManager;
+import controller.privateCloud.LocalController;
+
+//__________________  Some Default constraints, can be adjusted at runtime _________________________ 
+
+function boolean containsOtherProperties(Request req){
+	return (req.getProperties().contains(Property.ENCRYPTED) || req.getProperties().contains(Property.FAST)
+		 || req.getProperties().contains(Property.CHEAP));
+} 
+//__________________  Calculation rules _________________________ 
+ 
+rule "If the calculation request cannot be sent to the cloud, it musn't."
+    when
+        r : Request(r.getProperties().contains(Property.NOCLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION)
+    then
+    	System.out.println("Forwarded locally");
+        r.setHandled();
+        r.setAction(Action.CALCULATE_LOCAL);
+end
+
+rule "If the calculation request must be sent to the cloud, has to.  If a cloud is ready, use that cloud."
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
+        && CloudManager.hasAvailableCalculationCloud())
+    then
+    	System.out.println("Forwarded to booted cloud");
+        r.setHandled();
+        r.setAction(Action.CALCULATE_CLOUD);
+end
+
+rule "If the calculation request must be sent to the cloud, it has to.  If a cloud is not ready, boot new cloud, without predefined properties"
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
+        && ! CloudManager.hasAvailableCalculationCloud() && ! containsOtherProperties(r))
+    then
+    	System.out.println("Forwarded to newly booted cloud");
+        r.setHandled();
+        r.setAction(Action.CREATE_NEW_CLOUD);
+end
+
+rule "If the calculation request must be sent to the cloud, it has to.  If a cloud is not ready, boot new cloud with given properties"
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
+        && ! CloudManager.hasAvailableCalculationCloud() && containsOtherProperties(r))
+    then
+    	System.out.println("Forwarded to newly booted cloud");
+        r.setHandled();
+        r.setAction(Action.CREATE_NEW_CLOUD_PROPERTIES);
+end
+
+//__________________  Storage rules _________________________
+rule "If the storage request cannot be sent to the cloud, it musn't."
+    when
+        r : Request(r.getProperties().contains(Property.NOCLOUD) && r.handled == false && r.getPurpose() == Purpose.STORAGE)
+    then
+    	System.out.println("Forwarded locally");
+        r.setHandled();
+        r.setAction(Action.STORE_LOCAL);
+end
+
+rule "If the storage request must be sent to the cloud, has to.  If a cloud is ready, use that cloud."
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.STORAGE 
+        && CloudManager.hasAvailableCalculationCloud())
+    then
+    	System.out.println("Forwarded to booted cloud");
+        r.setHandled();
+        r.setAction(Action.STORE_CLOUD);
+end
+
+rule "If the storage request must be sent to the cloud, it has to.  If a cloud is not ready, boot new cloud, without predefined properties"
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.STORAGE 
+        && ! CloudManager.hasAvailableCalculationCloud() && ! containsOtherProperties(r))
+    then
+    	System.out.println("Forwarded to newly booted cloud");
+        r.setHandled();
+        r.setAction(Action.CREATE_NEW_CLOUD);
+end
+
+rule "If the storage request must be sent to the cloud, it has to.  If a cloud is not ready, boot new cloud with given properties"
+    when
+        r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.STORAGE 
+        && ! CloudManager.hasAvailableCalculationCloud() && containsOtherProperties(r))
+    then
+    	System.out.println("Forwarded to newly booted cloud");
+        r.setHandled();
+        r.setAction(Action.CREATE_NEW_CLOUD_PROPERTIES);
+end

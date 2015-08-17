@@ -1,0 +1,30 @@
+package drool
+ 
+import monitor.MonitorMeasurement;
+import monitor.MonitorController;
+import controller.cloud.CloudManager;
+ 
+rule "Local monitoring - processor"
+    when
+        m : MonitorMeasurement( m.getProcessor < 10 )
+    then
+    	m.isDanger();
+        System.out.println( "local monitoring detected problem - cores" );
+end
+
+rule "Local monitoring - load"
+    when
+        m : MonitorMeasurement( m.getLoad > 10 )
+    then
+    	m.isDanger();
+        System.out.println( "local monitoring detected problem - load" );
+end
+
+rule "Local monitoring - memory"
+    when
+        m : MonitorMeasurement( m.getMemory < 50)
+    then
+    	m.isDanger();
+        System.out.println( "local monitoring detected problem - memory" );
+end
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    template="/WEB-INF/templates/default.xhtml">
+    <ui:define name="content">
+         <h:form id="reg">
+            <h2>Random database request generator</h2>
+            <h3>This is a temporary test, later it will be possible to add actual values to the request entity</h3>
+
+            <p>
+                <h:panelGrid columns="2">
+                    <h:commandButton id="register"
+                        action="#{requestController.generateRandomRequest()}"
+                        value="Launch data based request" styleClass="register" />
+                    <h:messages styleClass="messages"
+                        errorClass="invalid" infoClass="valid"
+                        warnClass="warning" globalOnly="true" />
+                </h:panelGrid>
+            </p>
+        </h:form>
+        
+        <h:form id="reg2">
+            <h2>Random cloudInstance generator</h2>
+            <h3>This is a temporary test, later it will be possible to add actual values to the request entity</h3>
+
+            <p>
+                <h:panelGrid columns="2">
+                    <h:commandButton id="register2"
+                        action="#{cloudManager.generateRandomInstance()}"
+                        value="Launch data based request" styleClass="register" />
+                    <h:messages styleClass="messages"
+                        errorClass="invalid" infoClass="valid"
+                        warnClass="warning" globalOnly="true" />
+                </h:panelGrid>
+            </p>
+        </h:form>
+        
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,28 @@
+package drool.instances
+
+import controller.cloud.CloudPick;
+import controller.cloud.CloudChecker;
+ 
+rule "Best cloud was heroku"
+    when
+        p : CloudPick(CloudChecker.cloudScore("heroku",p.getProperties()) > CloudChecker.cloudScore("openshift",p.getProperties()))
+    then
+    	System.out.println("Selected best cloud as heroku");
+    	p.setBestCloud("heroku");
+end
+
+rule "Best cloud was openshift"
+    when
+        p : CloudPick(CloudChecker.cloudScore("heroku",p.getProperties()) < CloudChecker.cloudScore("openshift",p.getProperties()))
+    then
+    	System.out.println("Selected best cloud as openshift");
+    	p.setBestCloud("openshift");
+end
+
+rule "Both clouds are equal in score, so best cloud has to be picked manually"
+    when
+        p : CloudPick(CloudChecker.cloudScore("heroku",p.getProperties()) == CloudChecker.cloudScore("openshift",p.getProperties()))
+    then
+    	System.out.println("Selected best cloud, manually, as heroku");
+    	p.setBestCloud("heroku");
+end
