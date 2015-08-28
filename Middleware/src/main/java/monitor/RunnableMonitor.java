@@ -7,7 +7,9 @@ class RunnableMonitor implements Runnable {
 	private Thread t;
 	private String threadName;
 	private MonitorTimePrediction pred;
-	private final int TRESHOLD = 5;
+	private final int TRESHOLD = 1;
+	
+	private final int timer = 1;
 
 	private MonitorController man;
 
@@ -29,27 +31,36 @@ class RunnableMonitor implements Runnable {
 		double mem = MonitorMetaData.getMemory();
 		int sleepTime = 5000;
 		int count = 0;
+		int t = 0;
+		int idle = 0;
+		boolean bootedBackup = false;
 		try {
 			while (mayRun) {
-
-				MonitorMeasurement newMeasurement = new MonitorMeasurement(
-						MonitorMetaData.getSystemAVGLoad(),
-						MonitorMetaData.getAvailableProcessors(),
-						MonitorMetaData.getMemory());
-				System.out.println("_______Start measurement_______");
-				System.out.println(newMeasurement.getLoad());
-				System.out.println(newMeasurement.getProcessor());
-				System.out.println(newMeasurement.getMemory());
-				System.out.println("_______End Measurement_______");
+				System.out.println("--- RUNNING PRIVATE MONITOR MEASUREMENT ----");
+				MonitorMeasurement newMeasurement;
+				if(t < timer){
+					newMeasurement = new MonitorMeasurement(MonitorMetaData.getSafeLoad(),MonitorMetaData.getSafeProc(),MonitorMetaData.getSafeMemory());
+				} else {
+					newMeasurement = new MonitorMeasurement(MonitorMetaData.getSafeLoad(),MonitorMetaData.getSafeProc(),MonitorMetaData.getDangerousMemory());
+				}
+				
 				DroolInstance newDroolInstance = new DroolInstance();
-				System.out.println("generated random instance");
+				System.out.println("checked status private cloud");
 				newDroolInstance.evaluateMonitoring(newMeasurement);
 				System.out.println(newMeasurement.hasDanger());
 				if (newMeasurement.hasDanger()) {
 					if (count < TRESHOLD){
 						count++;
 					} else {
-						man.generateBackupInstance();
+						if(! bootedBackup){
+							bootedBackup = true;
+							man.generateBackupInstance();
+						} else {
+							if(idle > 100000000)
+								bootedBackup = false;
+						}
+						idle++;
+						count = 0;
 					}
 					
 				} else {
@@ -59,6 +70,7 @@ class RunnableMonitor implements Runnable {
 						count--;
 					}
 				}
+				t++;
 				Thread.sleep(pred.calcNewSleepTime(avgLoad, avProc, mem,
 						MonitorMetaData.getSystemAVGLoad(),
 						MonitorMetaData.getAvailableProcessors(),

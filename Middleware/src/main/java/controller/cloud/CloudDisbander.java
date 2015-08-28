@@ -7,11 +7,10 @@ import java.io.PrintWriter;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
+import resources.Configs;
 import entity.cloudInstance.CloudInstance;
 
 public class CloudDisbander {
-	// TODO config file
-	private final String disbandLocation = "/Users/koencertyn/workspace/Middleware/src/main/resources/disbandscripts/";
 	
 	public void disbandCloud(String cloudName,CloudInstance instance) {
 		runDisbandFile(cloudName,instance);
@@ -42,7 +41,7 @@ public class CloudDisbander {
 			System.out.println("Running " + threadName);
 			try {
 				ProcessBuilder pb = new ProcessBuilder("/bin/bash", 
-						disbandLocation+cloudName+"Disband.sh", instance.getUrl());
+						Configs.DISBANDLOCATION+cloudName+"Disband.sh", instance.getPlatformInstanceName());
 	            final Process process = pb.start();
 	            System.out.println(pb.environment());
 
@@ -66,6 +65,7 @@ public class CloudDisbander {
 				System.out.println("Thread " + threadName + " interrupted.");
 			}
 			System.out.println("Thread " + threadName + " exiting.");
+			stop();
 		}
 
 		public void start() {

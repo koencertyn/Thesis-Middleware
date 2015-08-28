@@ -1,11 +1,19 @@
 package entity.cloudInstance;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import entity.cloudInformation.CloudInformation;
 import enums.Purpose;
 
 @SuppressWarnings("serial")
@@ -17,7 +25,16 @@ public class CloudInstance {
 	private String platform;
 	private String url;
 	private Purpose goal;
+	private String platformInstanceName;
 	
+	public String getPlatformInstanceName() {
+		return platformInstanceName;
+	}
+
+	public void setPlatformInstanceName(String platformInstanceName) {
+		this.platformInstanceName = platformInstanceName;
+	}
+
 	@Id
     @GeneratedValue
     private Long id;
@@ -53,5 +70,8 @@ public class CloudInstance {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	@OneToMany(targetEntity=CloudInformation.class,mappedBy="cloudinstance",cascade={CascadeType.ALL},orphanRemoval=true)
+    Set<CloudInformation> information = new HashSet<CloudInformation>();
 	
 }

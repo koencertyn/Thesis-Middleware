@@ -81,6 +81,16 @@ rule "Priority high - calculation : if local situation is overloaded and has new
         r.setAction(Action.CREATE_NEW_CLOUD);
 end
 
+rule "Priority high - calculation : if local situation is not overloaded and has new calculation cloud booted execute in cloud."
+    when
+        r : Request(r.getPriority() == Priority.HIGH && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
+        	&& ! locallyCalculationDanger() )
+    then
+    	System.out.println("execute local");
+        r.setHandled();
+        r.setAction(Action.CALCULATE_LOCAL);
+end
+
 
 //__________________  Storage rules _________________________
 

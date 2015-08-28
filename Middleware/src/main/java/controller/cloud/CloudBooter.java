@@ -6,26 +6,27 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Model;
 import javax.inject.Inject;
 
+import resources.Configs;
 import entity.cloudInstance.CloudInstance;
 import entity.cloudInstance.CloudInstanceRegistration;
 import entity.request.Request;
 import enums.Purpose;
 
 public class CloudBooter {
-
-	// TODO config file
-	private final String bootLocation = "/Users/koencertyn/workspace/Middleware/src/main/resources/bootscripts/";
 	
-	@Inject
     private CloudInstanceRegistration cloudInstanceRegistration;
+      
+    private CloudManager cloudManager;
 	
 	private List<Request> requests = new ArrayList<Request>();
 
-	public void bootCloud(String cloudName,Purpose purpose) {
+	public void bootCloud(String cloudName,Purpose purpose, CloudInstanceRegistration cloudRegistration, CloudManager manager) {
+		this.cloudInstanceRegistration = cloudRegistration;
+		this.cloudManager = manager;
 		runBootFile(cloudName,purpose);
 	}
 
@@ -35,6 +36,7 @@ public class CloudBooter {
 	}
 
 	class BootingThread implements Runnable {
+		
 		private Thread t;
 		private final String threadName = "bootThread";
 		private String cloudName;
@@ -48,12 +50,12 @@ public class CloudBooter {
 
 		@Override
 		public void run() {
-			System.out.println("Running " + threadName);
+			System.out.println("--- RUNNING CLOUD BOOTER ----");
+			String name = "demokoencertyn"+ (int) (Math. random()*50 + 1);
 			try {
 				ProcessBuilder pb = new ProcessBuilder("/bin/bash", 
-	            		bootLocation+cloudName+"Boot.sh", "testje3", "/Users/koencertyn/test","/Users/koencertyn/workspace/Middleware");
+	            		Configs.BOOTLOCATION+cloudName+"Boot.sh", name, Configs.BOOTTO,Configs.BOOTFROM);
 	            final Process process = pb.start();
-	            System.out.println(pb.environment());
 
 	            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
 	            PrintWriter pw = new PrintWriter(process.getOutputStream());
@@ -65,12 +67,16 @@ public class CloudBooter {
 	            }
 	            System.out.println("Program terminated!");
 				CloudInstance req = new CloudInstance();
-				req.setGoal(purpose);
+				req.setGoal(purpose);         
 				req.setPlatform(cloudName);
-				
+				req.setPlatformInstanceName(name);
+				req.setUrl(Configs.getCloudUrl(name, cloudName));
 				try {
 					cloudInstanceRegistration.register(req);
+					cloudManager.startMonitoring(req);
+					System.out.println("started monitoring");
 				} catch (Exception e) {
+					System.out.println(e);
 				}
 				System.out.println("Script booting executed successfully for cloud :"+ cloudName);
 			} catch (Exception e) {
@@ -78,6 +84,14 @@ public class CloudBooter {
 				System.out.println("Thread " + threadName + " interrupted.");
 			}
 			System.out.println("Thread " + threadName + " exiting.");
+			executeRequests();
+		}
+
+		private void executeRequests() {
+			for(Request r : requests){
+				
+			}
+			
 		}
 
 		public void start() {

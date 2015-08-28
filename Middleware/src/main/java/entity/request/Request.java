@@ -25,12 +25,16 @@ import enums.Purpose;
 @Table
 public class Request {
 	
+	public Request(){
+		setRequestDate(new Date());
+	}
+	
 	private Priority prio = null;
 	
 	private Date requestDate = null;
 	
 	@ElementCollection
-	private Map<String, String> content = null;
+	private Map<String, String> content;
 	
 	private ArrayList<Property> properties = new ArrayList<Property>();
 	
@@ -100,8 +104,15 @@ public class Request {
 		return this.action;
 	}
 	
-	public void setAction(Action act){
+	public void setAction(Action action){
 		this.action = action;
 	}
+	
+	@Override
+	public String toString() {
+        return new StringBuffer(" First Name : ").append("test").toString();
+
+    }
+
 }
 

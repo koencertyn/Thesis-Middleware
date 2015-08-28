@@ -2,7 +2,6 @@ package monitor.cloud;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import entity.cloudInstance.CloudInstance;
@@ -14,6 +13,8 @@ class RunnableCloudMonitor implements Runnable {
 	   private CloudInstance instance;
 	   private CloudMonitor monitor;
 	   
+	   private final int parameter = 10;
+	   
 	   //We do this because of the deprecation of the stopthread method.
 	   private boolean mayRun = true;
 	   
@@ -24,18 +25,30 @@ class RunnableCloudMonitor implements Runnable {
 	       System.out.println("Creating " +  threadName );
 	   }
 	   @Override
-	public void run() {
+	   public void run() {
+		   System.out.println("--- RUNNING public MONITOR ----");
+		   int idleCount = 1;
 		   URL url;
 			try {
-				url = new URL(this.instance.getUrl()+"/rest/status");
-				BufferedReader in = new BufferedReader(
-		        new InputStreamReader(url.openStream()));
-		        String inputLine;
-		        while ((inputLine = in.readLine()) != null){
-		        	if(inputLine.equals("idle"))
-		        		this.monitor.disableCloud(this.instance);
-		        }
-		        in.close();
+				url = new URL(this.instance.getUrl()+"/blob/test");
+				while(mayRun){
+					BufferedReader in = new BufferedReader(
+			        new InputStreamReader(url.openStream()));
+			        String inputLine;
+			        while ((inputLine = in.readLine()) != null){
+			        	System.out.println("read line : "+inputLine);
+			        	if(inputLine.equals("testje jaja") && idleCount > parameter){
+			        		this.monitor.disableCloud(this.instance);
+			        		stop();
+			        	}
+			        	else if(inputLine.equals("testje jaja")){
+			        		System.out.println("measured idle cloud :"+this.instance.getUrl());
+			        		idleCount++;
+			        	}
+			        	Thread.sleep(5000);
+			        }
+			        in.close();
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -29,6 +29,7 @@ rule "If localstate is not overloaded, execute calculation locally."
     	System.out.println("Forwarded locally - no overloading");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
+        System.out.println("changed action to calculate local");
 end
 
 rule "If localstate is overloaded, and has 'fresh' cloud booted, forward calculation to cloud."

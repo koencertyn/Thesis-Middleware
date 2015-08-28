@@ -1,6 +1,7 @@
 package controller.privateCloud;
 
 import javax.ejb.Stateless;
+
 import entity.request.Request;
 
 @Stateless

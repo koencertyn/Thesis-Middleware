@@ -41,6 +41,14 @@ public class CloudChecker {
         return result;
     }
     
+    public static ArrayList<String> getCloudNames(){
+    	ArrayList<String> result = new ArrayList<String>();
+    	for(Hashtable<String, String> a : CloudChecker.getAttributes()){
+			result.add(a.get("platform"));
+		}
+    	return result;
+    }
+     
     public static Hashtable<String,String> getCloudAttributes(String cloud){
     	ArrayList<Hashtable<String, String>> allAttributes = getAttributes();
     	for ( Hashtable<String, String> att : allAttributes){

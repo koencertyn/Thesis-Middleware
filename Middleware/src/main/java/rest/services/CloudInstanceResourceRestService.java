@@ -9,7 +9,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import controller.cloud.CloudManager;
 import entity.cloudInstance.CloudInstance;
 import entity.cloudInstance.CloudInstanceRepository;
 

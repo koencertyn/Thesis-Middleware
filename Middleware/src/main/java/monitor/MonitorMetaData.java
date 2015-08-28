@@ -54,5 +54,21 @@ public class MonitorMetaData {
 		return freeMemory;
 	
 	}
+	
+	public static double getSafeMemory(){
+		return 100;
+	}
+	
+	public static double getDangerousMemory(){
+		return 10;
+	}
+	
+	public static double getSafeLoad(){
+		return 0;
+	}
+	
+	public static double getSafeProc(){
+		return 20;
+	}
 
 }

@@ -2,31 +2,37 @@ package controller.cloud;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Model;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 
 import monitor.cloud.CloudMonitor;
+import entity.cloudInformation.CloudInformation;
+import entity.cloudInformation.CloudInformationRegistration;
 import entity.cloudInstance.CloudInstance;
 import entity.cloudInstance.CloudInstanceRegistration;
 import entity.cloudInstance.CloudInstanceRepository;
 import entity.request.Request;
 import enums.Purpose;
 @Model
+@ApplicationScoped
 public class CloudManager {
 	
-	private final static String defaultCloud = "openshift";
+	private final static String defaultCloud = "heroku";
 	
 	@Inject
     private FacesContext facesContext;
 	
 	@Inject
-	private static CloudInstanceRepository repo;
+	private CloudInstanceRepository repo;
+	
+	@Inject
+	private CloudInformationRegistration information;
 	
 	@Inject
     private CloudInstanceRegistration cloudInstanceRegistration;
@@ -38,11 +44,30 @@ public class CloudManager {
 	private CloudBooter latestBooter;
 	
 	public void forwardToAnyCloud(Request req){
-		connectToUrl(buildUrl(repo.findCertainInstance(req.getPurpose()), req));
+		CloudInstance instance = repo.findCertainInstance(req.getPurpose());
+		CloudInformation info = new CloudInformation();
+		info.setIdentifier(req.getID().toString());
+		info.setInstance(instance);
+		info.setFetcher(connectToUrlWithFeedback(buildUrl(instance,req)+"/"+req.getID()));
+		try {
+			information.register(info);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public String forwardToAnyCloudWithFeedback(Request req){
-		return connectToUrlWithFeedback(buildUrl(repo.findCertainInstance(req.getPurpose()), req));
+		CloudInstance instance = repo.findCertainInstance(req.getPurpose());
+		CloudInformation info = new CloudInformation();
+		info.setIdentifier(req.getID().toString());
+		info.setInstance(instance);
+		info.setFetcher(connectToUrlWithFeedback(buildUrl(instance,req)+"/"+req.getID()));
+		try {
+			information.register(info);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return info.getIdentifier();
 	}
 	
 	public void forwardToSelective(Request req, CloudInstance ins){
@@ -50,12 +75,14 @@ public class CloudManager {
 	}
 	
 	public String forwardToSelectiveWithFeedback(Request req, CloudInstance ins){
+		String a = connectToUrlWithFeedback(buildUrl(ins, req));
+		System.out.println("test : "+a);
 		return connectToUrlWithFeedback(buildUrl(ins, req));
 	}
 	
 	public void bootCloud(String cloudName, Purpose purpose){
 		CloudBooter booter = new CloudBooter();
-		booter.bootCloud(cloudName, purpose);
+		booter.bootCloud(cloudName, purpose, cloudInstanceRegistration, this);
 		this.latestBooter = booter;
 	}
 	
@@ -74,7 +101,7 @@ public class CloudManager {
 	}
 	
 	private String buildUrl(CloudInstance inst, Request req){
-		String str ="";
+		String str ="http://";
 		str += inst.getUrl();
 		for(String partialReq : req.getContent().values()){
 			str+="/"+partialReq;
@@ -121,20 +148,16 @@ public class CloudManager {
 	}
 	
 	public static boolean hasAvailableStorageCloud(){
-		return (repo.findCertainInstance(Purpose.STORAGE) != null);
+		return true;
 	}
 	
 	public static boolean hasAvailableCalculationCloud(){
-		return (repo.findCertainInstance(Purpose.CALCULATION) != null);
+		return true;
 	}
 
 	public void bootBackupCloud(){
-		if(repo.findNonUsedInstance().isEmpty()){
-			CloudBooter newBooter = new CloudBooter();
-			newBooter.bootCloud(defaultCloud,Purpose.NONE);
-		} else {
-			System.out.println("already have newly booted cloud up.");
-		}
+		CloudBooter newBooter = new CloudBooter();
+		newBooter.bootCloud(defaultCloud,Purpose.CALCULATION, cloudInstanceRegistration, this);
 	}
 	
 	public void generateInstance(CloudInstance instance) throws Exception {

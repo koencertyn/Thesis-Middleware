@@ -19,7 +19,7 @@ public class CloudInformationListProducer {
     // Facelets or JSP view)
     @Produces
     @Named
-    public List<CloudInformation> getCloudInstances() {
+    public List<CloudInformation> getCloudInformations() {
         return instances;
     }
 }

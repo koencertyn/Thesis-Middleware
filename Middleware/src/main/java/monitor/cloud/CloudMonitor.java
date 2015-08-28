@@ -16,7 +16,7 @@ public class CloudMonitor {
 	
 	public void startMonitoring(CloudInstance instance){
 		RunnableCloudMonitor mon = new RunnableCloudMonitor(this,instance.getPlatform()+" -monitor", instance);
-		mon.run();
+		mon.start();
 	}
 	
 	
