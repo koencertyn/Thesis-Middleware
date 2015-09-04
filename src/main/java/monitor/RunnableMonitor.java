@@ -1,23 +1,28 @@
 package monitor;
 
+import resources.Configs;
 import drool.instances.DroolInstance;
+import entity.request.RequestRepository;
 
 class RunnableMonitor implements Runnable {
 
 	private Thread t;
 	private String threadName;
 	private MonitorTimePrediction pred;
-	private final int TRESHOLD = 1;
+	private final int TRESHOLD = 10;
 	
-	private final int timer = 1;
+	private final int timer = 10;
+	
+	private RequestRepository repo;
 
 	private MonitorController man;
 
 	// We do this because of the deprecation of the stopthread method.
 	private boolean mayRun = true;
 
-	RunnableMonitor(String name, MonitorController man) {
+	RunnableMonitor(String name, MonitorController man, RequestRepository repo) {
 		this.man = man;
+		this.repo = repo;
 		pred = new MonitorTimePrediction();
 		threadName = name;
 		System.out.println("Creating " + threadName);
@@ -29,25 +34,24 @@ class RunnableMonitor implements Runnable {
 		double avgLoad = MonitorMetaData.getSystemAVGLoad();
 		double avProc = MonitorMetaData.getAvailableProcessors();
 		double mem = MonitorMetaData.getMemory();
-		int sleepTime = 5000;
+		int sleepTime = 10000;
 		int count = 0;
 		int t = 0;
 		int idle = 0;
 		boolean bootedBackup = false;
 		try {
 			while (mayRun) {
-				System.out.println("--- RUNNING PRIVATE MONITOR MEASUREMENT ----");
+				System.out.println("--- RUNNING PRIVATE CLOUD MONITOR MEASUREMENT ----");
 				MonitorMeasurement newMeasurement;
 				if(t < timer){
 					newMeasurement = new MonitorMeasurement(MonitorMetaData.getSafeLoad(),MonitorMetaData.getSafeProc(),MonitorMetaData.getSafeMemory());
 				} else {
 					newMeasurement = new MonitorMeasurement(MonitorMetaData.getSafeLoad(),MonitorMetaData.getSafeProc(),MonitorMetaData.getDangerousMemory());
 				}
+				newMeasurement.setNbRequests(this.repo.findFromLastInterval(Configs.REQUESTINTERVAL));
 				
 				DroolInstance newDroolInstance = new DroolInstance();
-				System.out.println("checked status private cloud");
 				newDroolInstance.evaluateMonitoring(newMeasurement);
-				System.out.println(newMeasurement.hasDanger());
 				if (newMeasurement.hasDanger()) {
 					if (count < TRESHOLD){
 						count++;
@@ -55,8 +59,9 @@ class RunnableMonitor implements Runnable {
 						if(! bootedBackup){
 							bootedBackup = true;
 							man.generateBackupInstance();
+							stop();
 						} else {
-							if(idle > 100000000)
+							if(idle > 1000000000)
 								bootedBackup = false;
 						}
 						idle++;

@@ -10,7 +10,11 @@ import controller.privateCloud.LocalController;
 //__________________  Some Default constraints, can be adjusted at runtime _________________________ 
 
 function Boolean locallyCalculationOverloaded() {
-    return (MonitorMetaData.getAvailableProcessors() < 2);
+    return (MonitorMetaData.getAvailableProcessors() < 2  || (MonitorMetaData.getSystemAVGLoad() > 3));
+}
+
+function Boolean locallyCalculationOverloaded2(Request r) {
+    return (MonitorMetaData.getAvailableProcessors() < 2)||(r.getMeta().get("requests") > 10)|| (MonitorMetaData.getSystemAVGLoad() > 3);
 }
 
 function Boolean locallyStorageOverloaded() {
@@ -23,10 +27,10 @@ function Boolean locallyStorageOverloaded() {
  
 rule "If localstate is not overloaded, execute calculation locally."
     when
-        r : Request(r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
-        	&& ! locallyCalculationOverloaded())
+        r : Request(r.getPriority() == null && r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
+        	&& ! locallyCalculationOverloaded2(r))
     then
-    	System.out.println("Forwarded locally - no overloading");
+    	System.out.println("Forwarded locally - no overloading - standard");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
         System.out.println("changed action to calculate local");
@@ -34,21 +38,21 @@ end
 
 rule "If localstate is overloaded, and has 'fresh' cloud booted, forward calculation to cloud."
     when
-        r : Request(r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
-        	&& locallyCalculationOverloaded() && CloudManager.hasAvailableCalculationCloud() )
+        r : Request(r.getPriority() == null && r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
+        	&& locallyCalculationOverloaded2(r) && CloudManager.hasAvailableCalculationCloud() )
     then
         r.setHandled();
-        System.out.println("Forwarded to cloud");
+        System.out.println("Forwarded to cloud - standard");
         r.setAction(Action.CALCULATE_CLOUD);
 end
 
 rule "If localstate is overloaded, and has no 'fresh' cloud booted, forward calculation to cloud manager to select cloud."
     when
-        r : Request(r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
+        r : Request(r.getPriority() == null && r.getProperties().isEmpty() && r.getHandled() == false && r.getPurpose() == Purpose.CALCULATION
         	&& locallyCalculationOverloaded()  && ! CloudManager.hasAvailableCalculationCloud() )
     then
         r.setHandled();
-        System.out.println("Booting and forwarded to cloud");
+        System.out.println("Booting and forwarded to cloud - standard");
          r.setAction(Action.CREATE_NEW_CLOUD);
 end
 

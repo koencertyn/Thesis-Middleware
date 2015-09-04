@@ -22,21 +22,11 @@ function Boolean locallyStorageDanger(){
  
 //__________________  Calculation rules _________________________
 
-rule "If localstate is not overloaded, (no matter priority) execute calculation locally."
-    when
-        r : Request(r.getPriority() != null && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
-        	&& ! locallyCalculationOverloaded() && ! locallyCalculationDanger() )
-    then
-    	System.out.println("Forwarded locally");
-        r.setHandled();
-        r.setAction(Action.CALCULATE_LOCAL);
-end
-
 rule "Priority low - calculation: always execute locally."
     when
         r : Request(r.getPriority() == Priority.LOW && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION)
     then
-    	System.out.println("Added to local queue");
+    	System.out.println("Added to local queue - prio");
         r.setHandled();
         r.setAction(Action.ADD_LOCALQUEUE);
 end
@@ -46,27 +36,37 @@ rule "Priority medium - calculation : if local situation is 'tricky' and has new
         r : Request(r.getPriority() == Priority.MEDIUM && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
         	&& locallyCalculationDanger())
     then
-    	System.out.println("execute on booted cloud");
+    	System.out.println("execute on booted cloud - prio");
+        r.setHandled();
+        r.setAction(Action.CALCULATE_LOCAL);
+end
+
+rule "Priority medium - calculation : nothing is wrong, do it locally."
+    when
+        r : Request(r.getPriority() == Priority.MEDIUM && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
+        	&& ! locallyCalculationDanger() && ! locallyCalculationOverloaded())
+    then
+    	System.out.println("execute on private cloud - prio");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
 end
 
 rule "Priority medium - calculation : if local situation is 'tricky' and has no new calculation cloud booted execute locally."
     when
-        r : Request(r.getPriority() == Priority.MEDIUM && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
-        	&& locallyCalculationDanger() && ! locallyCalculationOverloaded())
+        r : Request(r.getPriority() == Priority.MEDIUM && r.getProperties().isEmpty() && r.handled == false && 
+        	r.getPurpose() == Purpose.CALCULATION && locallyCalculationOverloaded() && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("execute on locally");
+    	System.out.println("execute on public cloud - prio");
         r.setHandled();
-        r.setAction(Action.CALCULATE_LOCAL);
+        r.setAction(Action.CALCULATE_CLOUD);
 end
 
-rule "Priority medium - calculation : if local situation is overloaded and has new calculation cloud booted execute in cloud."
+rule "Priority high - calculation : if local situation is overloaded and has no new calculation cloud booted execute in cloud."
     when
-        r : Request(r.getPriority() == Priority.MEDIUM && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
-        	&& locallyCalculationDanger() && ! locallyCalculationOverloaded())
+        r : Request(r.getPriority() == Priority.HIGH && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
+        	&& locallyCalculationDanger() && ! CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("execute on newly booted cloud");
+    	System.out.println("execute on newly booted cloud - prio");
         r.setHandled();
         r.setAction(Action.CREATE_NEW_CLOUD);
 end
@@ -74,11 +74,11 @@ end
 rule "Priority high - calculation : if local situation is overloaded and has new calculation cloud booted execute in cloud."
     when
         r : Request(r.getPriority() == Priority.HIGH && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
-        	&& locallyCalculationDanger() )
+        	&& locallyCalculationDanger() && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("execute on newly booted cloud");
+    	System.out.println("execute on newly booted cloud - prio");
         r.setHandled();
-        r.setAction(Action.CREATE_NEW_CLOUD);
+        r.setAction(Action.CALCULATE_CLOUD);
 end
 
 rule "Priority high - calculation : if local situation is not overloaded and has new calculation cloud booted execute in cloud."
@@ -86,7 +86,7 @@ rule "Priority high - calculation : if local situation is not overloaded and has
         r : Request(r.getPriority() == Priority.HIGH && r.getProperties().isEmpty() && r.handled == false && r.getPurpose() == Purpose.CALCULATION
         	&& ! locallyCalculationDanger() )
     then
-    	System.out.println("execute local");
+    	System.out.println("execute local - prio");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
 end

@@ -50,9 +50,9 @@ public class Calculation {
     	Request req = new Request();
     	req.setPurpose(Purpose.CALCULATION);
     	HashMap<String, String> content = new HashMap<String,String>();
-    	content.put("relation1", relation1);
-    	content.put("relation2", relation2);
-    	content.put("goalRelation1", goalRelation);
+    	content.put("1", relation1);
+    	content.put("2", relation2);
+    	content.put("3", goalRelation);
     	req.setContent(content);
     	try {
 			requestRegistration.register(req);
@@ -74,9 +74,9 @@ public class Calculation {
     	req.setPriority(cont.getPriority(properties));
     	req.setProperties(cont.getPropertiesFromString(properties));
     	HashMap<String, String> content = new HashMap<String,String>();
-    	content.put("relation1", relation1);
-    	content.put("relation2", relation2);
-    	content.put("goalRelation1", goalRelation);
+    	content.put("1", relation1);
+    	content.put("2", relation2);
+    	content.put("3", goalRelation);
     	req.setContent(content);
     	try {
 			requestRegistration.register(req);
@@ -93,7 +93,7 @@ public class Calculation {
 	    Request req = new Request();
 		req.setPurpose(Purpose.CALCULATION);
 		HashMap<String, String> content = new HashMap<String,String>();
-    	content.put("id", id.toString());
+    	content.put("1", id.toString());
     	req.setContent(content);
 		try {
 			requestRegistration.register(req);
@@ -104,7 +104,7 @@ public class Calculation {
     }
     
     @GET
-    @Path("/results/requests/{interval}")
+    @Path("/requests/{interval}")
     public int getRequests(@PathParam("interval") int id) {
     	return requestRepo.findFromLastInterval(id);
     }

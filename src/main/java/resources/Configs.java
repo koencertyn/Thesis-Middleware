@@ -8,7 +8,9 @@ public class Configs {
 		
 	public static final double PREDICTIONVALUE = 1.1;
 	
-	public static final String HEROKU_URL = "http://change.herokuapp.com/rest/rest/tbir";
+	public static final int REQUESTINTERVAL = 60;
+	
+	public static final String HEROKU_URL = "http://change.herokuapp.com/rest/tbir";
 	public static final String OPENSHIFT_URL = "http://change-thesiskcertyn.rhcloud.com/rest/tbir";
 	
 	public static final String BOOTTO = "/Users/koencertyn/thesis/startup";

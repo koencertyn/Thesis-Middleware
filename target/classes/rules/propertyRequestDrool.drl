@@ -19,7 +19,7 @@ rule "If the calculation request cannot be sent to the cloud, it musn't."
     when
         r : Request(r.getProperties().contains(Property.NOCLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION)
     then
-    	System.out.println("Forwarded locally");
+    	System.out.println("Forwarded locally - property");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
 end
@@ -29,7 +29,7 @@ rule "If the calculation request must be sent to the cloud, has to.  If a cloud 
         r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("Forwarded to booted cloud");
+    	System.out.println("Forwarded to booted cloud - property");
         r.setHandled();
         r.setAction(Action.CALCULATE_CLOUD);
 end
@@ -39,7 +39,7 @@ rule "If the calculation request must be sent to the cloud, it has to.  If a clo
         r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && ! CloudManager.hasAvailableCalculationCloud() && ! containsOtherProperties(r))
     then
-    	System.out.println("Forwarded to newly booted cloud");
+    	System.out.println("Forwarded to newly booted cloud - property");
         r.setHandled();
         r.setAction(Action.CREATE_NEW_CLOUD);
 end
@@ -49,7 +49,7 @@ rule "If the calculation request must be sent to the cloud, it has to.  If a clo
         r : Request(r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && ! CloudManager.hasAvailableCalculationCloud() && containsOtherProperties(r))
     then
-    	System.out.println("Forwarded to newly booted cloud");
+    	System.out.println("Forwarded to newly booted cloud - property");
         r.setHandled();
         r.setAction(Action.CREATE_NEW_CLOUD_PROPERTIES);
 end
@@ -59,7 +59,7 @@ rule "cheap"
         r : Request(r.getProperties().contains(Property.CHEAP) && ! r.getProperties().contains(Property.CLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("Forwarded to newly booted cloud");
+    	System.out.println("Forwarded to newly booted cloud - property");
         r.setHandled();
         r.setAction(Action.CALCULATE_LOCAL);
 end
@@ -69,7 +69,7 @@ rule "fast"
         r : Request(r.getProperties().contains(Property.FAST) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("Forwarded to newly booted cloud");
+    	System.out.println("Forwarded to newly booted cloud - property");
         r.setHandled();
         r.setAction(Action.CALCULATE_CLOUD);
 end
@@ -79,9 +79,18 @@ rule "encryption"
         r : Request(r.getProperties().contains(Property.ENCRYPTED) && r.handled == false && r.getPurpose() == Purpose.CALCULATION 
         && CloudManager.hasAvailableCalculationCloud())
     then
-    	System.out.println("Forwarded to newly booted cloud");
+    	System.out.println("Forwarded to newly booted cloud - property");
         r.setHandled();
         r.setAction(Action.CALCULATE_CLOUD);
+end
+
+rule "newcloud" 
+	when
+        r : Request(r.getProperties().contains(Property.NEWCLOUD) && r.handled == false && r.getPurpose() == Purpose.CALCULATION)
+    then
+    	System.out.println("Forwarded to cloud that is newly booted. - property");
+        r.setHandled();
+        r.setAction(Action.CREATE_NEW_CLOUD);
 end
 
 //__________________  Storage rules _________________________

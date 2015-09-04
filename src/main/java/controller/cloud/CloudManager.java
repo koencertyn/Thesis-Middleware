@@ -18,12 +18,13 @@ import entity.cloudInstance.CloudInstance;
 import entity.cloudInstance.CloudInstanceRegistration;
 import entity.cloudInstance.CloudInstanceRepository;
 import entity.request.Request;
+import entity.request.RequestRepository;
 import enums.Purpose;
 @Model
 @ApplicationScoped
 public class CloudManager {
 	
-	private final static String defaultCloud = "heroku";
+	private final static String defaultCloud = "openshift";
 	
 	@Inject
     private FacesContext facesContext;
@@ -48,6 +49,7 @@ public class CloudManager {
 		CloudInformation info = new CloudInformation();
 		info.setIdentifier(req.getID().toString());
 		info.setInstance(instance);
+		System.out.println("destination url : "+buildUrl(instance,req)+"/"+req.getID());
 		info.setFetcher(connectToUrlWithFeedback(buildUrl(instance,req)+"/"+req.getID()));
 		try {
 			information.register(info);
@@ -71,13 +73,31 @@ public class CloudManager {
 	}
 	
 	public void forwardToSelective(Request req, CloudInstance ins){
-		connectToUrl(buildUrl(ins, req));
+		CloudInformation info = new CloudInformation();
+		info.setIdentifier(req.getID().toString());
+		info.setInstance(ins);
+		System.out.println("destination url : "+buildUrl(ins,req)+"/"+req.getID());
+		info.setFetcher(connectToUrlWithFeedback(buildUrl(ins,req)+"/"+req.getID()));
+		try {
+			information.register(info);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public String forwardToSelectiveWithFeedback(Request req, CloudInstance ins){
-		String a = connectToUrlWithFeedback(buildUrl(ins, req));
-		System.out.println("test : "+a);
-		return connectToUrlWithFeedback(buildUrl(ins, req));
+		CloudInformation info = new CloudInformation();
+		info.setIdentifier(req.getID().toString());
+		info.setInstance(ins);
+		System.out.println("destination url : "+buildUrl(ins,req));
+		String result = connectToUrlWithFeedback(buildUrl(ins,req));
+		info.setFetcher(result);
+		try {
+			information.register(info);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 	
 	public void bootCloud(String cloudName, Purpose purpose){
@@ -101,10 +121,12 @@ public class CloudManager {
 	}
 	
 	private String buildUrl(CloudInstance inst, Request req){
-		String str ="http://";
+		String str ="";
 		str += inst.getUrl();
-		for(String partialReq : req.getContent().values()){
-			str+="/"+partialReq;
+		int index = 1;
+		while(req.getContent().get(Integer.toString(index)) != null){
+			str+="/"+req.getContent().get(Integer.toString(index));
+			index++;
 		}
 		return str;
 	}
@@ -157,7 +179,7 @@ public class CloudManager {
 
 	public void bootBackupCloud(){
 		CloudBooter newBooter = new CloudBooter();
-		newBooter.bootCloud(defaultCloud,Purpose.CALCULATION, cloudInstanceRegistration, this);
+		newBooter.bootCloud("heroku",Purpose.CALCULATION, cloudInstanceRegistration, this);
 	}
 	
 	public void generateInstance(CloudInstance instance) throws Exception {

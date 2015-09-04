@@ -3,6 +3,7 @@ package monitor;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.util.Date;
 
 import javax.management.MBeanServerConnection;
 
@@ -11,6 +12,10 @@ public class MonitorMetaData {
 	static final int MegaBytes = 10241024;
 
 	public static double getSystemAVGLoad() {
+		if(isEvenTime())
+			return getSafeLoad();
+		else return getDangerousLoad();
+		/*
 		MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
 	
 		OperatingSystemMXBean osMBean;
@@ -24,10 +29,11 @@ public class MonitorMetaData {
 			// TODO Auto-generated catch block
 			return -1;
 		}
+		*/
 	}
 
 	public static double getAvailableProcessors() {
-		MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
+		/*MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
 	
 		OperatingSystemMXBean osMBean;
 		try {
@@ -39,11 +45,14 @@ public class MonitorMetaData {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			return -1;
-		}
+		}*/
+		return getSafeProc();
 	}
 
 	public static double getMemory() {
+		/*
 		long freeMemory = Runtime.getRuntime().freeMemory() / MegaBytes;
+		
 		// long totalMemory = Runtime.getRuntime().totalMemory()/MegaBytes;
 		// long maxMemory = Runtime.getRuntime().maxMemory()/MegaBytes;
 	
@@ -52,6 +61,8 @@ public class MonitorMetaData {
 		// maxMemory = Runtime.getRuntime().maxMemory() / MegaBytes;
 	
 		return freeMemory;
+		*/
+		return getSafeMemory();
 	
 	}
 	
@@ -69,6 +80,16 @@ public class MonitorMetaData {
 	
 	public static double getSafeProc(){
 		return 20;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static boolean isEvenTime(){
+		Date d = new Date();
+		return (d.getMinutes() % 2 == 0) ;
+	}
+	
+	private static double getDangerousLoad() {
+		return 4;
 	}
 
 }

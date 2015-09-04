@@ -1,10 +1,9 @@
 #! /bin/sh
 
-
 echo "________________________________"
 echo "Deleting app $1"
 echo "________________________________"
-heroku apps:destroy --app $1 --confirm $1
+/usr/local/bin/rhc delete-app $1 --confirm
 rm -rf ~/thesis/startup/$1/
 echo "________________________________"
 echo "$1 - deleted"

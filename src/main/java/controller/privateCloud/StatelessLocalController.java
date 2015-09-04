@@ -19,15 +19,15 @@ public class StatelessLocalController {
 	private CalculationInstanceRepository calculationRepository;
 	
 	public void executeRequest(Request req){
-		CalculationThread t = new CalculationThread(reg, "Calculate "+req.getID(), Long.valueOf(req.getID()), req.getContent().get("relation1"), 
-    			req.getContent().get("relation2"), req.getContent().get("goalRelation1"));
+		CalculationThread t = new CalculationThread(reg, "Calculate "+req.getID(), Long.valueOf(req.getID()), req.getContent().get("1"), 
+    			req.getContent().get("2"), req.getContent().get("3"));
     	System.out.println("-- : "+t);
 	}
 
 	public String retrieveResult(Request req){
-		CalculationInstance member = calculationRepository.findByGivenID(Long.valueOf(req.getContent().get("id")));
+		CalculationInstance member = calculationRepository.findByGivenID(Long.valueOf(req.getContent().get("1")));
         if (member == null) {
-            return "no instance has been found with that ID";
+            return "no instance has been found with that ID, if the ID is correct, it might be that the cloud is still booting and processing your request!";
         }
         return member.getValue();
 	}

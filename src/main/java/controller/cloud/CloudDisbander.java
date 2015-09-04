@@ -57,6 +57,7 @@ public class CloudDisbander {
 				try {
 					manager.remove(instance);
 				} catch (Exception e) {
+					System.out.println("Instance could not be removed");
 				}
 				System.out.println("Script booting executed successfully for cloud :"
 								+ cloudName);

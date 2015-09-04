@@ -1,6 +1,15 @@
 package monitor;
 
+import javax.inject.Inject;
+
+import resources.Configs;
+import entity.request.RequestRepository;
+
 public class MonitorMeasurement {
+	
+	@Inject
+	private RequestRepository reqRepo;
+	
 	private double load;
 	private double processor;
 	private double memory;
@@ -14,8 +23,8 @@ public class MonitorMeasurement {
 	public int getNbRequests() {
 		return nbRequests;
 	}
-	public void setNbRequests(int nbRequests) {
-		this.nbRequests = nbRequests;
+	public void setNbRequests(int reqs) {
+		this.nbRequests = reqs;
 	}
 	public double getLoad() {
 		return load;

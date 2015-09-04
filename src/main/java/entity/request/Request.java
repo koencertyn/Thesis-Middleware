@@ -36,6 +36,17 @@ public class Request {
 	@ElementCollection
 	private Map<String, String> content;
 	
+	@ElementCollection
+	private Map<String, Integer> meta;
+	
+	public Map<String, Integer> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(Map<String, Integer> meta) {
+		this.meta = meta;
+	}
+
 	private ArrayList<Property> properties = new ArrayList<Property>();
 	
 	private Purpose purpose = null;
@@ -107,12 +118,6 @@ public class Request {
 	public void setAction(Action action){
 		this.action = action;
 	}
-	
-	@Override
-	public String toString() {
-        return new StringBuffer(" First Name : ").append("test").toString();
-
-    }
 
 }
 

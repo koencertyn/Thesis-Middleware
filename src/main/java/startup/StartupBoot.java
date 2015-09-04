@@ -28,14 +28,14 @@ public class StartupBoot{
     	i.setGoal(Purpose.CALCULATION);
     	i.setPlatform("openshift");
     	i.setPlatformInstanceName("demo");
-    	i.setUrl("demo-thesiskcertyn.rhcloud.com/rest/tbir");
+    	i.setUrl("http://demo-thesiskcertyn.rhcloud.com/rest/tbir");
     	try {
 			cloud.register(i);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	//controller.startMonitoring();
+    	controller.startMonitoring();
     	
     }
   

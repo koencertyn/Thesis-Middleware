@@ -51,10 +51,15 @@ public class CloudBooter {
 		@Override
 		public void run() {
 			System.out.println("--- RUNNING CLOUD BOOTER ----");
-			String name = "demokoencertyn"+ (int) (Math. random()*50 + 1);
+			String name;
+			if(cloudName.equals("openshift")){
+				name = "demokoencertyn01";
+			} else 
+				name = "demokoencertyn"+ (int) (Math. random()*50 + 1);
+			CloudInstance instance = new CloudInstance();
 			try {
 				ProcessBuilder pb = new ProcessBuilder("/bin/bash", 
-	            		Configs.BOOTLOCATION+cloudName+"Boot.sh", name, Configs.BOOTTO,Configs.BOOTFROM);
+	            		Configs.BOOTLOCATION+cloudName+"Boot.sh", name, Configs.BOOTTO,Configs.BOOTFROM+"/"+cloudName);
 	            final Process process = pb.start();
 
 	            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -62,18 +67,19 @@ public class CloudBooter {
 	            String line;
 
 	            while ((line = br.readLine()) != null) {
-	                System.out.println(line);
+	                System.out.println("running");
 	                pw.flush();
 	            }
 	            System.out.println("Program terminated!");
-				CloudInstance req = new CloudInstance();
-				req.setGoal(purpose);         
-				req.setPlatform(cloudName);
-				req.setPlatformInstanceName(name);
-				req.setUrl(Configs.getCloudUrl(name, cloudName));
+				
+				instance.setGoal(purpose);         
+				instance.setPlatform(cloudName);
+				instance.setPlatformInstanceName(name);
+				instance.setUrl(Configs.getCloudUrl(name, cloudName));
 				try {
-					cloudInstanceRegistration.register(req);
-					cloudManager.startMonitoring(req);
+					cloudInstanceRegistration.register(instance);
+					Thread.sleep(2000);
+					cloudManager.startMonitoring(instance);
 					System.out.println("started monitoring");
 				} catch (Exception e) {
 					System.out.println(e);
@@ -84,12 +90,12 @@ public class CloudBooter {
 				System.out.println("Thread " + threadName + " interrupted.");
 			}
 			System.out.println("Thread " + threadName + " exiting.");
-			executeRequests();
+			executeRequests(instance);
 		}
 
-		private void executeRequests() {
+		private void executeRequests(CloudInstance instance) {
 			for(Request r : requests){
-				
+				cloudManager.forwardToSelective(r, instance);
 			}
 			
 		}
@@ -109,6 +115,7 @@ public class CloudBooter {
 	}
 
 	public void addRequest(Request req) {
+		System.out.println("added request to booting cloud");
 		requests.add(req);
 	}
 

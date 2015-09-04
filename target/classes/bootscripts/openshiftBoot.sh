@@ -5,15 +5,12 @@
  $2 declares the LOCAL directory where you want to boot the cloud from.
  $3 declares the LOCAL directory from where you can copy the code from.
 
-example execution : sh openshiftBoot.sh testje-jaja ~/test /Users/koencertyn/workspace/Middleware
+example execution : sh openshiftBoot.sh demokoencerty01 /Users/koencertyn/thesis/startup /Users/koencertyn/thesis/boot/openshift
 
-ProcessBuilder pb = new ProcessBuilder("/bin/bash",
-	            		"/Users/koencertyn/workspace/Middleware/src/main/resources/bootscripts/openshiftBoot.sh",
-	   				 "testje1", "/Users/koencertyn/test","/Users/koencertyn/workspace/Middleware");
 '
 cd $2
 echo "Booting $1"
-rhc create-app $1 jbossas
+/usr/local/bin/rhc create-app $1 jbossas
 cd $1
 echo "Booted $1"
 echo "________________________________"

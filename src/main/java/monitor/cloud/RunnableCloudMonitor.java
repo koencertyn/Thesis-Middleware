@@ -13,7 +13,7 @@ class RunnableCloudMonitor implements Runnable {
 	   private CloudInstance instance;
 	   private CloudMonitor monitor;
 	   
-	   private final int parameter = 10;
+	   private final int parameter = 20;
 	   
 	   //We do this because of the deprecation of the stopthread method.
 	   private boolean mayRun = true;
@@ -30,18 +30,18 @@ class RunnableCloudMonitor implements Runnable {
 		   int idleCount = 1;
 		   URL url;
 			try {
-				url = new URL(this.instance.getUrl()+"/blob/test");
+				url = new URL(this.instance.getUrl()+"/status");
 				while(mayRun){
 					BufferedReader in = new BufferedReader(
 			        new InputStreamReader(url.openStream()));
 			        String inputLine;
 			        while ((inputLine = in.readLine()) != null){
 			        	System.out.println("read line : "+inputLine);
-			        	if(inputLine.equals("testje jaja") && idleCount > parameter){
+			        	if(inputLine.equals("idle") && idleCount > parameter){
 			        		this.monitor.disableCloud(this.instance);
 			        		stop();
 			        	}
-			        	else if(inputLine.equals("testje jaja")){
+			        	else if(inputLine.equals("idle")){
 			        		System.out.println("measured idle cloud :"+this.instance.getUrl());
 			        		idleCount++;
 			        	}

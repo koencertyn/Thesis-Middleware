@@ -1,16 +1,20 @@
 package controller.privateCloud;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import resources.Configs;
 import controller.cloud.CloudManager;
 import controller.cloud.CloudPick;
 import drool.instances.DroolInstance;
 import entity.cloudInformation.CloudInformation;
 import entity.cloudInformation.CloudInformationRepository;
 import entity.request.Request;
+import entity.request.RequestRepository;
 import enums.Action;
 import enums.Priority;
 import enums.Property;
@@ -24,13 +28,19 @@ public class StatelessRequestController {
 	@Inject
 	private StatelessLocalController local;
 	
+	@Inject RequestRepository requestRepo;
+	
 	@Inject
 	private CloudManager cloudManager;
 	
 	public void evaluateRequest(Request req){
+		Map<String,Integer> meta = new HashMap<String, Integer>();
+		meta.put("requests", requestRepo.findFromLastInterval(Configs.REQUESTINTERVAL));
+		req.setMeta(meta);
+		System.out.println("# requests in last interval : "+req.getMeta().get("requests"));
 		DroolInstance newDroolInstance = new DroolInstance();
 		newDroolInstance.evaluateRequest(req);
-		System.out.println("ACTION THAT SHOULD BE TAKEN :"+req.getAction());
+		System.out.println("action that should be taken :"+req.getAction());
 		executeRequest(req);
 	}
 	
@@ -52,7 +62,7 @@ public class StatelessRequestController {
 			DroolInstance newDroolInstance = new DroolInstance();
 			CloudPick p = new CloudPick(req.getProperties());
 			newDroolInstance.selectCloud(p);
-			cloudManager.bootCloud(p.getBestCloud(), req.getPurpose());
+			cloudManager.bootCloud("openshift", req.getPurpose());
 			cloudManager.addRequestToBootingCloud(req);
 		} else if(req.getAction().equals(Action.CREATE_NEW_CLOUD_PROPERTIES)){
 			System.out.println("boot new cloud with properties");
@@ -66,9 +76,11 @@ public class StatelessRequestController {
 	}
 	
 	public String retrieveResult(Request req){
-		if(informationRepo.findByKey(req.getContent().get("id")) != null){
-			return cloudManager.forwardToSelectiveWithFeedback(req, informationRepo.findByKey(req.getContent().get("id")).getInstance());
+		if(informationRepo.findByKey(req.getContent().get("1")) != null){
+			System.out.println("trying it to fetch in public");
+			return cloudManager.forwardToSelectiveWithFeedback(req, informationRepo.findByKey(req.getContent().get("1")).getInstance());
 		}
+		System.out.println("Fetching respons in private cloud");
 		return local.retrieveResult(req);
 	}
 
@@ -119,6 +131,8 @@ public class StatelessRequestController {
 			return Property.FAST;
 		} else if(property.contains("bigdata")){
 			return Property.BIG_DATA;
+		} else if(property.contains("new")){
+			return Property.NEWCLOUD;
 		} else {
 			return null;
 		}
